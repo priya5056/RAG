@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-st.title("🚀 VERSION 22 JULY")
+st.title("🚀 VERSION 22 JULY DEBUG")
 # ----------------------------------
 # Backend URL
 # ----------------------------------
@@ -185,7 +185,4 @@ if user_message:
             "role": "assistant",
             "content": ai_reply
         }
-    )th st.chat_message(
-        "assistant"
-    ):
-        st.write(ai_reply)
+    )
