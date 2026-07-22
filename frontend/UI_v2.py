@@ -145,11 +145,11 @@ if user_message:
             ]
 
         else:
+            ai_reply = f"""
+        Status Code: {response.status_code}
 
-            ai_reply = (
-                f"Backend Error: "
-                f"{response.status_code}"
-            )
+        {response.text}
+        """
 
     except Exception as e:
 
