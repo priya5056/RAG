@@ -6,9 +6,10 @@ import requests
 # ----------------------------------
 
 try:
-    BACKEND_URL = st.secrets["BACKEND_URL"]
-except:
+    BACKEND_URL = st.secrets["BACKEND_URL"].rstrip("/")
+except Exception:
     BACKEND_URL = "https://self-healing-two-production-2677.up.railway.app"
+
 # ----------------------------------
 # Page Config
 # ----------------------------------
@@ -45,72 +46,73 @@ with st.sidebar:
 - Academic Calendar
 - Student Policies
 - Scholarships
-- NEET Preparation
 - JEE Preparation
-- Study Materials
+- NEET Preparation
+- Study Material
+- Batch Timings
 """)
 
     st.markdown("---")
 
+    # Test Backend
+    try:
+        health = requests.get(f"{BACKEND_URL}/health", timeout=5)
+
+        if health.status_code == 200:
+            st.success("🟢 Backend Connected")
+        else:
+            st.error("🔴 Backend Not Healthy")
+    except Exception as e:
+        st.error("🔴 Backend Offline")
+        st.caption(str(e))
+
+    st.markdown("---")
+
     if st.button("🗑️ Clear Chat"):
-
         st.session_state.messages = []
-
         st.rerun()
 
 # ----------------------------------
-# Main Header
+# Header
 # ----------------------------------
 
 st.title("🎓 AI Academic Assistant")
 
-st.markdown(
-    """
-Welcome to the Academic Support Assistant.
+st.write(
+"""
+Welcome!
 
-Ask questions related to:
+Ask anything related to:
 
-✅ Admissions
-
-✅ Fees & Scholarships
-
-✅ Faculty Information
-
-✅ Academic Calendar
-
-✅ Student Policies
-
-✅ NEET Preparation
-
-✅ JEE Preparation
-
-✅ Study Resources
+- Admissions
+- Fees
+- Scholarships
+- Faculty
+- Academic Calendar
+- Student Policies
+- JEE Preparation
+- NEET Preparation
+- Study Materials
 """
 )
 
 # ----------------------------------
-# Display Messages
+# Show Chat History
 # ----------------------------------
 
 for message in st.session_state.messages:
 
-    with st.chat_message(
-        message["role"]
-    ):
-        st.write(
-            message["content"]
-        )
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
 
 # ----------------------------------
-# User Input
+# Chat Input
 # ----------------------------------
 
-user_message = st.chat_input(
-    "Ask your question..."
-)
+user_message = st.chat_input("Ask your question...")
 
 # ----------------------------------
-# Send Message
+# Handle Chat
 # ----------------------------------
 
 if user_message:
@@ -131,43 +133,59 @@ if user_message:
         "message": user_message
     }
 
-    try:
+    url = f"{BACKEND_URL}/chat"
 
-        st.write("Calling:", f"{BACKEND_URL}/chat")
+    with st.chat_message("assistant"):
 
-        response = requests.post(
-           f"{BACKEND_URL}/chat",
-           json=payload
-        )
+        with st.spinner("Thinking..."):
 
-        st.write(response.status_code)
-        st.write(response.text)
+            try:
 
-        if response.status_code == 200:
+                response = requests.post(
+                    url,
+                    json=payload,
+                    timeout=120
+                )
 
-            ai_reply = response.json()[
-                "reply"
-            ]
+                # Debug info
+                st.caption(f"Calling: {url}")
+                st.caption(f"Status Code: {response.status_code}")
 
-        else:
-            ai_reply = f"""
-        Status Code: {response.status_code}
+                if response.status_code == 200:
 
-        {response.text}
-        """
+                    data = response.json()
 
-    except Exception as e:
+                    ai_reply = data.get("reply", "No reply received.")
 
-        ai_reply = str(e)
+                    st.write(ai_reply)
+
+                    # Optional Sources
+                    if "sources" in data and data["sources"]:
+                        st.markdown("### 📄 Sources")
+                        for source in data["sources"]:
+                            st.write(f"• {source}")
+
+                else:
+
+                    ai_reply = (
+                        f"Backend Error ({response.status_code})\n\n"
+                        f"{response.text}"
+                    )
+
+                    st.error(ai_reply)
+
+            except Exception as e:
+
+                ai_reply = str(e)
+
+                st.error(ai_reply)
 
     st.session_state.messages.append(
         {
             "role": "assistant",
             "content": ai_reply
         }
-    )
-
-    with st.chat_message(
+    )th st.chat_message(
         "assistant"
     ):
         st.write(ai_reply)
