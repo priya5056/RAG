@@ -8,7 +8,7 @@ import requests
 try:
     BACKEND_URL = st.secrets["BACKEND_URL"]
 except:
-    BACKEND_URL = "https://rag-production-1d6e.up.railway.app"
+    BACKEND_URL = "https://self-healing-two-production-155a.up.railway.app"
 # ----------------------------------
 # Page Config
 # ----------------------------------
