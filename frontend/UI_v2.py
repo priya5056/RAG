@@ -133,10 +133,15 @@ if user_message:
 
     try:
 
+        st.write("Calling:", f"{BACKEND_URL}/chat")
+
         response = requests.post(
-            f"{BACKEND_URL}/chat",
-            json=payload
+           f"{BACKEND_URL}/chat",
+           json=payload
         )
+
+        st.write(response.status_code)
+        st.write(response.text)
 
         if response.status_code == 200:
 
